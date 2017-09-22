@@ -1,1 +1,1 @@
-## Small demo for learnning spyider.
+## Small demo for learning spyider.
