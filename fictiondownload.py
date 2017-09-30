@@ -56,16 +56,10 @@ def main():
             else:
                 condition = False
                 message = '正在下载：' + chaptername
-                
             finally:
                 progressBar(i, len(original_url_soup.find(id='list').find_all('a')), message)
     else:
         print('下载完成！')
             #print('%s%s' % (each.replace('\xa0', ''), os.linesep))
-        
-    
-
-
-
 if __name__ == '__main__':
     main()
