@@ -11,8 +11,8 @@ __author__ = 'yi_Xu'
 
 from bs4 import BeautifulSoup
 import urllib.request
-import os
-import sys, time
+import os, re
+import sys, time, random
 
 
 def getsoup(url):
@@ -22,15 +22,18 @@ def getsoup(url):
     return soup
 
 
-def progressBar(count, total, message=None):
+def progressBar(count, total, message=None, interval = None):
+    if not interval:
+        interval = 1+ (random.randint(1,9)/10)
     i = int((count/total)*100)
     k = i + 1
+    
     ProgressBar = '>'*(i//2)+' '*((100-k)//2)
-    sys.stdout.write('\r'+ProgressBar+'[%s%%]'%(i+1)+' '*50)
+    sys.stdout.write('\r'+ProgressBar+'[%s%%]'%(i+1)+' '*100)
     sys.stdout.flush()
-    sys.stdout.write('\r'+ProgressBar+'[%s%%]'%(i+1)+message)
+    sys.stdout.write('\r'+ProgressBar+'[%s%%]'%(i+1)+message+'  稍等'+str(interval)+'秒！')
     sys.stdout.flush()
-    time.sleep(0.1)
+    time.sleep(interval)
 
 
 def main():
@@ -41,15 +44,23 @@ def main():
         f.write("《希灵帝国》\n")
     for i, a in enumerate(original_url_soup.find(id='list').find_all('a')):
         chaptername = a.string
+        chaptername = re.sub('[\\\\|:"<>?*./]', '_',chaptername).replace(' ', '')
+        
         url = str(a.get('href'))
-        with open(os.path.join(download_path,'希灵帝国.txt'), mode='a', encoding='utf-8') as f:
+        fileName = '希灵帝国' + chaptername + '.txt'
+        filePath = os.path.join(download_path,fileName)
+        if os.path.isfile(filePath):
+            message = chaptername + '已经下载过了！'
+            progressBar(i, len(original_url_soup.find(id='list').find_all('a')), message, interval=0.001)
+            continue
+        with open(filePath, mode='w', encoding='utf-8') as f:
             f.write('\n' + chaptername + '\n')
         condition = True
         while condition:
             try:
                 chapter_url_soup = getsoup(url)
                 for each in chapter_url_soup.find(id='content').strings:
-                    with open(os.path.join(download_path,'希灵帝国.txt'), mode='a', encoding='utf-8') as f:
+                    with open(filePath, mode='a', encoding='utf-8') as f:
                         f.write('%s%s' % (each.replace('\xa0', ''), os.linesep))
             except urllib.error.HTTPError:
                 message = 'wait 403 拒接访问！'
